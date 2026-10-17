@@ -2,6 +2,35 @@ import { describe, expect, it } from "vitest";
 import { databaseConfig, migrationUrl } from "../../src/server/database-config";
 
 describe("database TLS configuration", () => {
+  it.each([
+    '"postgresql://test:private-password@localhost:5432/portfolio"',
+    "DIRECT_URL=postgresql://test:private-password@localhost:5432/portfolio",
+    "https://localhost/portfolio",
+    " postgresql://test:private-password@localhost:5432/portfolio ",
+    "postgresql://test:private-password@localhost:5432/port\nfolio",
+    "",
+  ])(
+    "rejects malformed configuration without leaking credentials (%#)",
+    (value) => {
+      for (const [variable, run] of [
+        ["DATABASE_URL", () => databaseConfig(value)],
+        ["DIRECT_URL", () => migrationUrl(value)],
+        ["DATABASE_URL", () => migrationUrl(value, "DATABASE_URL")],
+      ] as const) {
+        let caught: unknown;
+        try {
+          run();
+        } catch (error) {
+          caught = error;
+        }
+        expect(caught).toBeInstanceOf(Error);
+        expect((caught as Error).message).toContain(variable);
+        expect((caught as Error).stack).not.toContain("private-password");
+        expect((caught as Error).cause).toBeUndefined();
+        expect(caught).not.toHaveProperty("input");
+      }
+    },
+  );
   it("enforces verified Supabase TLS even when the input URL requests disabled TLS", () => {
     const url =
       "postgresql://test:encoded%40password@aws-0-test.pooler.supabase.com:6543/postgres?sslmode=disable";

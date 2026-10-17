@@ -9,6 +9,7 @@ export default defineConfig({
       process.env.DIRECT_URL ||
         process.env.DATABASE_URL ||
         "postgresql://localhost:5432/portfolio",
+      process.env.DIRECT_URL ? "DIRECT_URL" : "DATABASE_URL",
     ),
   },
 });
