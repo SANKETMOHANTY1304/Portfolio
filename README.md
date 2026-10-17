@@ -1,5 +1,7 @@
 # Sanket Mohanty — engineering portfolio
 
+Personal AI engineering portfolio built with Next.js, TypeScript, and Supabase, featuring a responsive multipage design, dark/light themes, project case studies, and a secure admin dashboard powered by Better Auth.
+
 A complete Next.js App Router portfolio with a private content dashboard, PostgreSQL persistence, and a printable resume. The public site starts without credentials using typed starter content. Database-backed editing and contact persistence fail closed until configured; there is no simulated submission success or public registration.
 
 ## Local setup
