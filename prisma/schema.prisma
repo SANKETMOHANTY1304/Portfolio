@@ -1,0 +1,258 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+datasource db {
+  provider = "postgresql"
+}
+model Profile {
+  id String @id @default("owner")
+  name String
+  designation String
+  headline String
+  introduction String
+  about String
+  focus String
+  focusTitle String @default("Multimodal RAG")
+  specializations Json @default("[]")
+  goals String
+  email String
+  phone String @default("")
+  showPhone Boolean @default(false)
+  location String @default("")
+  image String @default("")
+  resumeUrl String @default("")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model Project {
+  id String @id @default(cuid())
+  slug String @unique
+  title String
+  summary String
+  category String
+  cover String @default("")
+  coverAlt String @default("")
+  visual String @default("graph")
+  repositoryUrl String @default("")
+  demoUrl String @default("")
+  workRelated Boolean @default(false)
+  allowRepository Boolean @default(true)
+  allowImages Boolean @default(true)
+  featured Boolean @default(false)
+  published Boolean @default(false)
+  displayOrder Int @default(0)
+  technologies ProjectTechnology[]
+  sections ProjectSection[]
+  images ProjectImage[]
+  skills Skill[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([published, displayOrder])
+}
+model ProjectTechnology {
+  id String @id @default(cuid())
+  name String
+  displayOrder Int @default(0)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@unique([projectId, name])
+}
+model ProjectSection {
+  id String @id @default(cuid())
+  title String
+  body String
+  displayOrder Int @default(0)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId, displayOrder])
+}
+model ProjectImage {
+  id String @id @default(cuid())
+  url String
+  alt String
+  displayOrder Int @default(0)
+  projectId String
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  @@index([projectId])
+}
+model Experience {
+  id String @id @default(cuid())
+  company String
+  position String
+  employmentType String @default("")
+  location String @default("")
+  startDate String @default("")
+  endDate String @default("")
+  description String
+  technologies String[]
+  link String @default("")
+  published Boolean @default(false)
+  displayOrder Int @default(0)
+  highlights ExperienceHighlight[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([published, displayOrder])
+}
+model ExperienceHighlight {
+  id String @id @default(cuid())
+  text String
+  displayOrder Int @default(0)
+  experienceId String
+  experience Experience @relation(fields: [experienceId], references: [id], onDelete: Cascade)
+  @@index([experienceId])
+}
+model SkillCategory {
+  id String @id @default(cuid())
+  name String @unique
+  skills Skill[]
+}
+model Skill {
+  id String @id @default(cuid())
+  name String
+  icon String @default("")
+  evidenceUrl String @default("")
+  categoryId String
+  category SkillCategory @relation(fields: [categoryId], references: [id])
+  projects Project[]
+  published Boolean @default(false)
+  displayOrder Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@unique([categoryId, name])
+  @@index([published, displayOrder])
+}
+model Certification {
+  id String @id @default(cuid())
+  title String
+  issuer String @default("")
+  issueDate String @default("")
+  credentialId String @default("")
+  verificationUrl String @default("")
+  previewUrl String @default("")
+  category String @default("Professional")
+  skills String[]
+  published Boolean @default(false)
+  displayOrder Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([published, displayOrder])
+}
+model Education {
+  id String @id @default(cuid())
+  degree String
+  institution String
+  location String @default("")
+  startDate String @default("")
+  endDate String @default("")
+  specialization String @default("")
+  grade String @default("")
+  coursework String[]
+  achievements String @default("")
+  published Boolean @default(false)
+  displayOrder Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([published, displayOrder])
+}
+model Achievement {
+  id String @id @default(cuid())
+  title String
+  organization String @default("")
+  date String @default("")
+  description String
+  verificationUrl String @default("")
+  doi String @default("")
+  published Boolean @default(false)
+  displayOrder Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([published, displayOrder])
+}
+model SocialLink {
+  id String @id @default(cuid())
+  label String
+  url String
+  published Boolean @default(true)
+  displayOrder Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model SiteSetting {
+  id String @id @default("site")
+  title String
+  description String
+  showCertifications Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+model ContactMessage {
+  id String @id @default(cuid())
+  name String
+  email String
+  subject String
+  message String
+  read Boolean @default(false)
+  archived Boolean @default(false)
+  notificationStatus String @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([archived, read, createdAt])
+}
+model RateLimit {
+  id String @id
+  count Int
+  expiresAt DateTime
+  @@index([expiresAt])
+}
+model User {
+  id String @id
+  name String
+  email String @unique
+  emailVerified Boolean @default(false)
+  image String?
+  role String @default("user")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  sessions Session[]
+  accounts Account[]
+}
+model Session {
+  id String @id
+  expiresAt DateTime
+  token String @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  ipAddress String?
+  userAgent String?
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  @@index([userId])
+}
+model Account {
+  id String @id
+  accountId String
+  providerId String
+  userId String
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  accessToken String?
+  refreshToken String?
+  idToken String?
+  accessTokenExpiresAt DateTime?
+  refreshTokenExpiresAt DateTime?
+  scope String?
+  password String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([userId])
+  @@unique([providerId, accountId])
+}
+model Verification {
+  id String @id
+  identifier String
+  value String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  @@index([identifier])
+}
